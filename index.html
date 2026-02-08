@@ -259,9 +259,20 @@
 
     document.getElementById('goalTarget').textContent = TEAM_GOAL.toLocaleString();
 
-    function processData(csvText) {
-      const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
-      const rows = parsed.data || [];
+// Fix cases where rows come back without real line breaks
+const normalized = csvText
+  .replace(/\r\n/g, "\n")
+  .replace(/\r/g, "\n")
+  .replace(/"\s+"/g, "\"\n\"");
+
+const parsed = Papa.parse(normalized, {
+  header: true,
+  skipEmptyLines: true
+});
+
+const rows = parsed.data || [];
+
+
 
       const all = rows
         .map(r => ({
