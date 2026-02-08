@@ -206,7 +206,7 @@
       <div class="mvp-card">
         <div class="mvp-rank-visual"><div class="mvp-ring"><span class="mvp-number">#1</span></div></div>
         <div class="mvp-info">
-          <div class="mvp-label">⚡ MVP of the Week</div>
+          <div class="mvp-label">⚡ Top Adopterk</div>
           <div class="mvp-name" id="mvpName">—</div>
           <div class="mvp-stat"><strong id="mvpPrompts">0</strong> prompts this week</div>
           <div class="mvp-badges" id="mvpBadges"></div>
@@ -261,7 +261,7 @@
   // ============================================================
   // CONFIG
   // ============================================================
-  const TEAM_GOAL = 1000;
+  const TEAM_GOAL = 1400;
   const SHEETS_URL = '/api/leaderboard';
 
   // Hide "Open Sheet" link so the Sheet URL/ID isn't exposed
@@ -380,7 +380,7 @@
       current[0]?.dateText || current.find(r => r.dateValue.getTime() === currentWeek.getTime())?.dateText || '';
 
     document.getElementById('weekLabel').textContent =
-      currentWeekText ? `Date of ${currentWeekText}` : '—';
+      currentWeekText ? `Date as of ${currentWeekText}` : '—';
 
     // MVP
     if (current.length) {
