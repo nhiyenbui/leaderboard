@@ -259,20 +259,19 @@
 
     document.getElementById('goalTarget').textContent = TEAM_GOAL.toLocaleString();
 
-// Fix cases where rows come back without real line breaks
-const normalized = csvText
-  .replace(/\r\n/g, "\n")
-  .replace(/\r/g, "\n")
-  .replace(/"\s+"/g, "\"\n\"");
+    function processData(csvText) {
+      // Fix cases where rows come back without real line breaks (quotes separated by spaces)
+      const normalized = String(csvText || '')
+        .replace(/\r\n/g, "\n")
+        .replace(/\r/g, "\n")
+        .replace(/"\s+"/g, "\"\n\"");
 
-const parsed = Papa.parse(normalized, {
-  header: true,
-  skipEmptyLines: true
-});
+      const parsed = Papa.parse(normalized, {
+        header: true,
+        skipEmptyLines: true
+      });
 
-const rows = parsed.data || [];
-
-
+      const rows = parsed.data || [];
 
       const all = rows
         .map(r => ({
@@ -312,10 +311,14 @@ const rows = parsed.data || [];
         const badges = document.getElementById('mvpBadges');
         badges.innerHTML = '';
 
-        if (mvp.prompts > (pbMap[mvp.name] || 0) && dates.length > 1) badges.innerHTML += '<span class="mvp-badge badge-record">New Record</span>';
+        if (mvp.prompts > (pbMap[mvp.name] || 0) && dates.length > 1) {
+          badges.innerHTML += '<span class="mvp-badge badge-record">New Record</span>';
+        }
 
         const weeksActive = [...new Set(all.filter(r => r.name === mvp.name).map(r => r.date))].length;
-        if (weeksActive > 1) badges.innerHTML += `<span class="mvp-badge badge-streak">${weeksActive} Week Streak</span>`;
+        if (weeksActive > 1) {
+          badges.innerHTML += `<span class="mvp-badge badge-streak">${weeksActive} Week Streak</span>`;
+        }
       }
 
       // Goal
@@ -346,7 +349,9 @@ const rows = parsed.data || [];
         }
 
         let badgesHtml = '';
-        if (person.prompts > (pbMap[person.name] || 0) && dates.length > 1) badgesHtml += '<span class="mini-badge record">PR</span>';
+        if (person.prompts > (pbMap[person.name] || 0) && dates.length > 1) {
+          badgesHtml += '<span class="mini-badge record">PR</span>';
+        }
 
         const row = document.createElement('div');
         row.className = `board-row ${rc}`;
@@ -384,7 +389,10 @@ const rows = parsed.data || [];
           if (h && h.length > 1) {
             const avg = h.reduce((s, v) => s + v, 0) / h.length;
             const variance = h.reduce((s, v) => s + Math.pow(v - avg, 2), 0) / h.length;
-            if (variance < bestVar && avg > 0) { bestVar = variance; conPerson = { name: p.name, avg: Math.round(avg), weeks: h.length }; }
+            if (variance < bestVar && avg > 0) {
+              bestVar = variance;
+              conPerson = { name: p.name, avg: Math.round(avg), weeks: h.length };
+            }
           }
         });
         if (conPerson) {
