@@ -13,466 +13,208 @@
       --bg-deep: #040a18;
       --bg-surface: rgba(8, 22, 48, 0.85);
       --bg-elevated: rgba(12, 30, 60, 0.9);
-      --bg-card: rgba(16, 36, 72, 0.7);
       --border-dim: rgba(255, 255, 255, 0.04);
       --border-subtle: rgba(100, 160, 255, 0.1);
       --border-accent: rgba(100, 180, 255, 0.25);
-      --text-primary: #e8edf5;
-      --text-secondary: rgba(232, 237, 245, 0.6);
-      --text-muted: rgba(232, 237, 245, 0.35);
+      --white: #ffffff;
       --cyan: #5cb8ff;
       --cyan-bright: #7dcfff;
-      --cyan-dim: rgba(92, 184, 255, 0.12);
-      --cyan-glow: rgba(92, 184, 255, 0.35);
       --green: #34d399;
-      --green-dim: rgba(52, 211, 153, 0.12);
       --red: #f87171;
       --gold: #fbbf24;
-      --gold-dim: rgba(251, 191, 36, 0.1);
-      --gold-glow: rgba(251, 191, 36, 0.3);
       --bronze: #f59e0b;
     }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
+
     body {
       font-family: 'Chakra Petch', sans-serif;
-      min-height: 100vh;
-      color: var(--text-primary);
-      overflow-x: hidden;
       background: var(--bg-deep);
-      background-image:
-        radial-gradient(ellipse at 20% 0%, rgba(30, 80, 180, 0.4) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 10%, rgba(20, 60, 160, 0.35) 0%, transparent 45%),
-        radial-gradient(ellipse at 50% 100%, rgba(10, 40, 120, 0.3) 0%, transparent 50%),
-        linear-gradient(180deg, #040a18 0%, #071a3a 40%, #0a1e42 70%, #050e24 100%);
-      background-attachment: fixed;
+      color: var(--white);
+      min-height: 100vh;
     }
-    .bg-grid {
-      position: fixed; inset: 0;
-      background-image:
-        linear-gradient(rgba(92, 184, 255, 0.02) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(92, 184, 255, 0.02) 1px, transparent 1px);
-      background-size: 52px 52px;
-      mask-image: radial-gradient(ellipse at 50% 30%, black 20%, transparent 70%);
-      -webkit-mask-image: radial-gradient(ellipse at 50% 30%, black 20%, transparent 70%);
-      pointer-events: none; z-index: 0;
+
+    .container {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 48px 20px 80px;
     }
-    .bg-orb { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; animation: orbFloat 20s ease-in-out infinite; }
-    .bg-orb-1 { width: 500px; height: 500px; top: -10%; left: -5%; background: rgba(30, 100, 220, 0.15); }
-    .bg-orb-2 { width: 400px; height: 400px; top: 50%; right: -10%; background: rgba(20, 80, 200, 0.1); animation-delay: -7s; animation-duration: 25s; }
-    .bg-orb-3 { width: 350px; height: 350px; bottom: -5%; left: 30%; background: rgba(40, 90, 200, 0.08); animation-delay: -14s; animation-duration: 22s; }
-    .bg-scanline { position: fixed; inset: 0; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.015) 2px, rgba(0, 0, 0, 0.015) 4px); pointer-events: none; z-index: 0; }
-    .container { position: relative; z-index: 1; max-width: 880px; margin: 0 auto; padding: 48px 20px 80px; }
 
-    .header { text-align: center; margin-bottom: 40px; }
-    .header-eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500; letter-spacing: 4px; text-transform: uppercase; color: var(--cyan); margin-bottom: 14px; opacity: 0; animation: fadeUp 0.5s ease 0.1s forwards; }
-    .header-title { font-size: 48px; font-weight: 700; letter-spacing: -1px; line-height: 1.1; opacity: 0; animation: fadeUp 0.5s ease 0.2s forwards; }
-    .header-title .accent { background: linear-gradient(135deg, var(--cyan-bright) 0%, #34d399 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .header-meta { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-muted); margin-top: 14px; display: flex; align-items: center; justify-content: center; gap: 16px; opacity: 0; animation: fadeUp 0.5s ease 0.3s forwards; }
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
 
-    .mvp-section { margin-bottom: 28px; opacity: 0; animation: fadeUp 0.5s ease 0.4s forwards; }
-    .mvp-card { position: relative; background: var(--bg-surface); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--border-accent); border-radius: 16px; padding: 32px; display: flex; align-items: center; gap: 28px; overflow: hidden; }
-    .mvp-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--cyan), transparent); }
-    .mvp-card::after { content: ''; position: absolute; top: -50%; right: -20%; width: 60%; height: 200%; background: radial-gradient(ellipse, rgba(92, 184, 255, 0.04) 0%, transparent 60%); pointer-events: none; }
-    .mvp-rank-visual { width: 80px; height: 80px; flex-shrink: 0; }
-    .mvp-ring { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--gold); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 24px var(--gold-glow), inset 0 0 24px rgba(251, 191, 36, 0.05); animation: glowPulse 3s ease-in-out infinite; }
-    .mvp-number { font-family: 'IBM Plex Mono', monospace; font-size: 32px; font-weight: 600; color: var(--gold); }
-    .mvp-info { flex: 1; position: relative; z-index: 1; }
-    .mvp-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
-    .mvp-name { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
-    .mvp-stat { font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: var(--text-secondary); }
-    .mvp-stat strong { color: var(--cyan-bright); font-weight: 600; }
-    .mvp-badges { display: flex; gap: 8px; margin-top: 10px; }
-    .mvp-badge { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; border: 1px solid; }
-    .badge-record { color: var(--gold); border-color: rgba(251, 191, 36, 0.2); background: var(--gold-dim); }
-    .badge-streak { color: var(--cyan); border-color: rgba(92, 184, 255, 0.2); background: var(--cyan-dim); }
+    .header-title {
+      font-size: 48px;
+      font-weight: 700;
+    }
 
-    .goal-section { margin-bottom: 28px; opacity: 0; animation: fadeUp 0.5s ease 0.45s forwards; }
-    .goal-card { background: var(--bg-surface); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 20px 24px; }
-    .goal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
-    .goal-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
-    .goal-numbers { font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: var(--text-secondary); }
-    .goal-numbers strong { color: var(--cyan-bright); font-size: 18px; font-weight: 600; }
-    .goal-track { width: 100%; height: 8px; background: rgba(255, 255, 255, 0.05); border-radius: 4px; overflow: hidden; }
-    .goal-fill { height: 100%; background: linear-gradient(90deg, #3b82f6, var(--cyan-bright), var(--green)); border-radius: 4px; transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 12px rgba(92, 184, 255, 0.3); }
-    .goal-exceeded .goal-fill { background: linear-gradient(90deg, var(--green), var(--gold)); box-shadow: 0 0 16px rgba(52, 211, 153, 0.3); }
+    .header-meta {
+      font-family: 'IBM Plex Mono', monospace;
+      color: var(--white);
+      margin-top: 12px;
+    }
 
-    .board-section { opacity: 0; animation: fadeUp 0.5s ease 0.5s forwards; }
-    .board { background: var(--bg-surface); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--border-subtle); border-radius: 14px; overflow: hidden; }
-    .board-head { display: grid; grid-template-columns: 60px 1fr 100px 90px; padding: 14px 24px; background: var(--bg-elevated); border-bottom: 1px solid var(--border-dim); font-family: 'IBM Plex Mono', monospace; font-size: 9px; font-weight: 500; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-muted); }
-    .board-head span:nth-child(3), .board-head span:nth-child(4) { text-align: right; }
-    .board-body { max-height: 640px; overflow-y: auto; }
-    .board-row { display: grid; grid-template-columns: 60px 1fr 100px 90px; padding: 0 24px; align-items: center; height: 60px; border-bottom: 1px solid var(--border-dim); transition: all 0.25s ease; position: relative; opacity: 0; animation: fadeUp 0.4s ease forwards; }
-    .board-row:last-child { border-bottom: none; }
-    .board-row:hover { background: rgba(92, 184, 255, 0.04); }
-    .board-row::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: transparent; transition: background 0.25s ease; }
-    .board-row:hover::before { background: var(--cyan); box-shadow: 0 0 8px var(--cyan-glow); }
-    .r-badge { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600; }
-    .r-1 .r-badge { background: linear-gradient(135deg, var(--gold), #f59e0b); color: var(--bg-deep); box-shadow: 0 4px 16px var(--gold-glow); }
-    .r-2 .r-badge { background: linear-gradient(135deg, #cbd5e1, #94a3b8); color: var(--bg-deep); box-shadow: 0 4px 12px rgba(148, 163, 184, 0.2); }
-    .r-3 .r-badge { background: linear-gradient(135deg, var(--bronze), #d97706); color: var(--bg-deep); box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2); }
-    .r-default .r-badge { background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-secondary); }
-    .name-cell { display: flex; align-items: center; gap: 10px; }
-    .name-text { font-size: 14px; font-weight: 500; }
-    .r-1 .name-text, .r-2 .name-text, .r-3 .name-text { font-weight: 600; }
-    .name-badges { display: flex; gap: 4px; }
-    .mini-badge { font-family: 'IBM Plex Mono', monospace; font-size: 8px; letter-spacing: 0.5px; text-transform: uppercase; padding: 2px 5px; border-radius: 3px; }
-    .mini-badge.record { color: var(--gold); background: var(--gold-dim); }
-    .prompts-cell { text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 17px; font-weight: 600; color: var(--cyan-bright); }
-    .r-1 .prompts-cell { color: var(--gold); }
-    .trend-cell { text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 12px; display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
-    .trend-up { color: var(--green); }
-    .trend-down { color: var(--red); }
-    .trend-flat { color: var(--text-muted); }
-    .trend-arrow { font-size: 10px; }
-    .row-progress { position: absolute; bottom: 0; left: 60px; right: 24px; height: 2px; background: var(--border-dim); }
-    .row-progress-fill { height: 100%; border-radius: 1px; transition: width 0.8s ease; }
-    .r-1 .row-progress-fill { background: linear-gradient(90deg, var(--gold), rgba(251, 191, 36, 0.2)); }
-    .r-2 .row-progress-fill, .r-3 .row-progress-fill { background: linear-gradient(90deg, var(--cyan), rgba(92, 184, 255, 0.15)); }
-    .r-default .row-progress-fill { background: linear-gradient(90deg, rgba(92, 184, 255, 0.35), rgba(92, 184, 255, 0.05)); }
+    .goal-label,
+    .goal-numbers,
+    .goal-numbers strong,
+    .board-head,
+    .r-badge,
+    .name-text,
+    .prompts-cell,
+    .trend-cell,
+    .trend-up,
+    .trend-down,
+    .trend-flat {
+      color: var(--white) !important;
+    }
 
-    .insights { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; opacity: 0; animation: fadeUp 0.5s ease 0.55s forwards; }
-    .insight-card { background: var(--bg-surface); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 20px; }
-    .insight-label { font-family: 'IBM Plex Mono', monospace; font-size: 9px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
-    .insight-name { font-size: 18px; font-weight: 600; margin-bottom: 2px; }
-    .insight-stat { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-secondary); }
-    .insight-stat .highlight { color: var(--green); font-weight: 600; }
+    .board {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      overflow: hidden;
+    }
 
-    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 24px; opacity: 0; animation: fadeUp 0.5s ease 0.6s forwards; }
-    .stat-box { background: var(--bg-surface); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 18px 16px; text-align: center; }
-    .stat-val { font-family: 'IBM Plex Mono', monospace; font-size: 26px; font-weight: 600; color: var(--cyan-bright); margin-bottom: 2px; }
-    .stat-lbl { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); }
+    .board-head {
+      display: grid;
+      grid-template-columns: 60px 1fr 100px 90px;
+      padding: 14px 24px;
+      background: var(--bg-elevated);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
 
-    .state-msg { text-align: center; padding: 60px 20px; color: var(--text-muted); }
-    .spinner { width: 28px; height: 28px; border: 2px solid var(--border-subtle); border-top-color: var(--cyan); border-radius: 50%; margin: 0 auto 14px; animation: spin 0.8s linear infinite; }
-    .error-msg { color: var(--red); }
-    .setup-hint { max-width: 480px; margin: 24px auto 0; text-align: left; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-muted); line-height: 1.8; background: var(--bg-elevated); border-radius: 8px; padding: 16px 20px; border: 1px solid var(--border-subtle); }
-    .setup-hint code { background: var(--bg-card); padding: 2px 6px; border-radius: 3px; color: var(--cyan); }
+    .board-row {
+      display: grid;
+      grid-template-columns: 60px 1fr 100px 90px;
+      padding: 0 24px;
+      align-items: center;
+      height: 60px;
+      border-bottom: 1px solid var(--border-dim);
+    }
 
-    .footer { text-align: center; margin-top: 32px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); opacity: 0; animation: fadeUp 0.5s ease 0.65s forwards; }
-    .footer a { color: var(--cyan); text-decoration: none; }
+    .prompts-cell {
+      text-align: right;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 16px;
+      font-weight: 600;
+    }
 
-    .board-body::-webkit-scrollbar { width: 5px; }
-    .board-body::-webkit-scrollbar-track { background: transparent; }
-    .board-body::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 3px; }
+    .trend-cell {
+      text-align: right;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+    }
 
-    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    @keyframes glowPulse { 0%, 100% { box-shadow: 0 0 24px var(--gold-glow), inset 0 0 24px rgba(251, 191, 36, 0.05); } 50% { box-shadow: 0 0 40px var(--gold-glow), inset 0 0 36px rgba(251, 191, 36, 0.08); } }
-    @keyframes orbFloat { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(20px, -30px); } 50% { transform: translate(-15px, 15px); } 75% { transform: translate(25px, 20px); } }
-
-    @media (max-width: 640px) {
-      .container { padding: 32px 14px 60px; }
-      .header-title { font-size: 30px; }
-      .mvp-card { flex-direction: column; text-align: center; padding: 24px; gap: 16px; }
-      .board-head, .board-row { grid-template-columns: 48px 1fr 80px 70px; padding: 0 14px; }
-      .board-head { padding: 12px 14px; }
-      .board-row { height: 56px; }
-      .prompts-cell { font-size: 14px; }
-      .insights { grid-template-columns: 1fr; }
-      .stats-grid { grid-template-columns: repeat(2, 1fr); }
-      .mvp-ring { width: 64px; height: 64px; }
-      .mvp-number { font-size: 26px; }
-      .mvp-name { font-size: 22px; }
+    .footer {
+      display: none;
     }
   </style>
 </head>
 
 <body>
-  <div class="bg-grid"></div>
-  <div class="bg-orb bg-orb-1"></div>
-  <div class="bg-orb bg-orb-2"></div>
-  <div class="bg-orb bg-orb-3"></div>
-  <div class="bg-scanline"></div>
-
   <div class="container">
     <header class="header">
-      <div class="header-eyebrow">Weekly Performance Dashboard</div>
-      <h1 class="header-title">Copilot <span class="accent">Adoption Leaderboard</span></h1>
-      <div class="header-meta"><span id="weekLabel">—</span></div>
-    </header>
-
-    <section class="mvp-section" id="mvpSection" style="display:none;">
-      <div class="mvp-card">
-        <div class="mvp-rank-visual"><div class="mvp-ring"><span class="mvp-number">#1</span></div></div>
-        <div class="mvp-info">
-          <div class="mvp-label">⚡ MVP of the Week</div>
-          <div class="mvp-name" id="mvpName">—</div>
-          <div class="mvp-stat"><strong id="mvpPrompts">0</strong> prompts this week</div>
-          <div class="mvp-badges" id="mvpBadges"></div>
-        </div>
+      <h1 class="header-title">Copilot Adoption Leaderboard</h1>
+      <div class="header-meta">
+        <span id="weekLabel">—</span>
       </div>
-    </section>
+    </header>
 
     <section class="goal-section" id="goalSection" style="display:none;">
       <div class="goal-card" id="goalCard">
         <div class="goal-header">
           <span class="goal-label">Team Weekly Target</span>
-          <span class="goal-numbers"><strong id="goalCurrent">0</strong> / <span id="goalTarget">1,500</span></span>
+          <span class="goal-numbers">
+            <strong id="goalCurrent">0</strong> / <span id="goalTarget">1,000</span>
+          </span>
         </div>
-        <div class="goal-track"><div class="goal-fill" id="goalFill" style="width:0%"></div></div>
+        <div class="goal-track">
+          <div class="goal-fill" id="goalFill" style="width:0%"></div>
+        </div>
       </div>
     </section>
 
     <section class="board-section">
       <div class="board">
-        <div class="board-head"><span>Rank</span><span>Name</span><span>Prompts</span><span>Trend</span></div>
-        <div class="board-body" id="boardBody">
-          <div class="state-msg"><div class="spinner"></div><div>Loading leaderboard…</div></div>
+        <div class="board-head">
+          <span>Rank</span>
+          <span>Name</span>
+          <span>Prompts</span>
+          <span>Trend</span>
         </div>
+        <div class="board-body" id="boardBody"></div>
       </div>
     </section>
-
-    <div class="insights" id="insightsSection" style="display:none;">
-      <div class="insight-card">
-        <div class="insight-label">📈 Rising Star</div>
-        <div class="insight-name" id="risingName">—</div>
-        <div class="insight-stat" id="risingStat">—</div>
-      </div>
-      <div class="insight-card">
-        <div class="insight-label">🎯 Most Consistent</div>
-        <div class="insight-name" id="consistentName">—</div>
-        <div class="insight-stat" id="consistentStat">—</div>
-      </div>
-    </div>
-
-    <div class="stats-grid" id="statsSection" style="display:none;">
-      <div class="stat-box"><div class="stat-val" id="sTotalPrompts">0</div><div class="stat-lbl">Total Prompts</div></div>
-      <div class="stat-box"><div class="stat-val" id="sAvg">0</div><div class="stat-lbl">Avg / Person</div></div>
-      <div class="stat-box"><div class="stat-val" id="sTeamSize">0</div><div class="stat-lbl">Team Members</div></div>
-      <div class="stat-box"><div class="stat-val" id="sParticipation">0%</div><div class="stat-lbl">Participation</div></div>
-    </div>
-
-    <div class="footer">Data refreshes every 60s · <a href="#" id="sheetLink" target="_blank" rel="noreferrer">Open Sheet</a></div>
   </div>
 
 <script>
-  // ============================================================
-  // CONFIG
-  // ============================================================
-  const TEAM_GOAL = 1500;
+  const TEAM_GOAL = 1000;
   const SHEETS_URL = '/api/leaderboard';
 
-  // Hide "Open Sheet" link so the Sheet URL/ID isn't exposed
-  document.getElementById('sheetLink').style.display = 'none';
-  document.getElementById('goalTarget').textContent = TEAM_GOAL.toLocaleString();
-
-  // Parse dates like 2/3/2026 OR 2026-02-03 reliably
   function parseDateFlexible(s) {
-    const text = String(s || '').trim();
-    if (!text) return null;
-
-    // ISO format: 2026-02-03
-    if (/^\d{4}-\d{2}-\d{2}$/.test(text)) {
-      const d = new Date(text + "T00:00:00");
-      return isNaN(d) ? null : d;
-    }
-
-    // Slash format: 2/3/2026 or 02/03/2026
-    const m = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-    if (m) {
-      let a = parseInt(m[1], 10);
-      let b = parseInt(m[2], 10);
-      const y = parseInt(m[3], 10);
-
-      // Heuristic:
-      // - if first number > 12 => treat as DD/MM/YYYY
-      // - else treat as MM/DD/YYYY
-      let month, day;
-      if (a > 12) { day = a; month = b; }
-      else { month = a; day = b; }
-
-      const d = new Date(y, month - 1, day);
-      return isNaN(d) ? null : d;
-    }
-
-    // Last resort (not ideal, but better than failing)
-    const d = new Date(text);
+    const d = new Date(s);
     return isNaN(d) ? null : d;
   }
 
   function processData(rawText) {
-    // Normalize weird formatting (quotes separated by spaces, odd line breaks)
-    const normalized = String(rawText || '')
-      .replace(/\r\n/g, "\n")
-      .replace(/\r/g, "\n")
-      .replace(/"\s+"/g, "\"\n\"");
-
-    // Auto-detect delimiter: tabs or commas
-    const delimiter = normalized.includes("\t") ? "\t" : ",";
-
-    const parsed = Papa.parse(normalized, {
+    const parsed = Papa.parse(rawText, {
       header: true,
-      skipEmptyLines: true,
-      delimiter
+      skipEmptyLines: true
     });
 
     const rows = parsed.data || [];
 
     const all = rows
-      .map(r => {
-        const dateText = String(r['Date'] || '').trim();
-        const dateValue = parseDateFlexible(dateText);
-
-        return {
-          dateText,       // keep as-is (2/3/2026)
-          dateValue,      // real date used internally
-          name: String(r['Name'] || '').trim(),
-          prompts: Number.parseInt(r['Prompts'], 10) || 0
-        };
-      })
+      .map(r => ({
+        dateText: r.Date,
+        dateValue: parseDateFlexible(r.Date),
+        name: r.Name,
+        prompts: parseInt(r.Prompts, 10) || 0
+      }))
       .filter(r => r.name && r.dateValue);
 
-    if (!all.length) {
-      throw new Error(
-        `No valid rows found. I received ${rows.length} rows. ` +
-        `Check headers are exactly: Date, Name, Prompts.`
-      );
-    }
-
-    // Unique dates newest -> oldest
-    const dates = [...new Set(all.map(r => r.dateValue.getTime()))]
-      .sort((a, b) => b - a)
-      .map(t => new Date(t));
-
-    const currentWeek = dates[0];
-    const lastWeek = dates[1] || null;
+    const dates = [...new Set(all.map(r => r.dateValue.getTime()))].sort((a, b) => b - a);
+    const currentWeek = new Date(dates[0]);
 
     const current = all
       .filter(r => r.dateValue.getTime() === currentWeek.getTime())
       .sort((a, b) => b.prompts - a.prompts);
 
-    const lastMap = {};
-    if (lastWeek) {
-      all
-        .filter(r => r.dateValue.getTime() === lastWeek.getTime())
-        .forEach(r => { lastMap[r.name] = r.prompts; });
-    }
-
-    const pbMap = {};
-    all.forEach(r => {
-      if (r.dateValue.getTime() !== currentWeek.getTime()) {
-        pbMap[r.name] = Math.max(pbMap[r.name] || 0, r.prompts);
-      }
-    });
-
-    const historyMap = {};
-    all.forEach(r => {
-      if (!historyMap[r.name]) historyMap[r.name] = [];
-      historyMap[r.name].push(r.prompts);
-    });
-
-    const maxPrompts = current.length ? current[0].prompts : 1;
-
-    // Display "Week of" using the same text format from the sheet
-    const currentWeekText =
-      current[0]?.dateText || current.find(r => r.dateValue.getTime() === currentWeek.getTime())?.dateText || '';
-
     document.getElementById('weekLabel').textContent =
-      currentWeekText ? `Week of ${currentWeekText}` : '—';
+      current.length ? `Date of ${current[0].dateText}` : '—';
 
-    // MVP
-    if (current.length) {
-      const mvp = current[0];
-      document.getElementById('mvpSection').style.display = '';
-      document.getElementById('mvpName').textContent = mvp.name;
-      document.getElementById('mvpPrompts').textContent = mvp.prompts.toLocaleString();
-
-      const badges = document.getElementById('mvpBadges');
-      badges.innerHTML = '';
-
-      if (mvp.prompts > (pbMap[mvp.name] || 0) && dates.length > 1) {
-        badges.innerHTML += '<span class="mvp-badge badge-record">New Record</span>';
-      }
-
-      const weeksActive = [...new Set(all.filter(r => r.name === mvp.name).map(r => r.dateValue.getTime()))].length;
-      if (weeksActive > 1) {
-        badges.innerHTML += `<span class="mvp-badge badge-streak">${weeksActive} Week Streak</span>`;
-      }
-    }
-
-    // Goal
     const totalPrompts = current.reduce((s, r) => s + r.prompts, 0);
     document.getElementById('goalSection').style.display = '';
     document.getElementById('goalCurrent').textContent = totalPrompts.toLocaleString();
 
-    const pct = Math.min((totalPrompts / TEAM_GOAL) * 100, 100);
-    setTimeout(() => { document.getElementById('goalFill').style.width = pct + '%'; }, 300);
-
-    const goalCard = document.getElementById('goalCard');
-    goalCard.classList.toggle('goal-exceeded', totalPrompts >= TEAM_GOAL);
-
-    // Leaderboard
     const boardBody = document.getElementById('boardBody');
     boardBody.innerHTML = '';
 
-    current.forEach((person, i) => {
-      const rank = i + 1;
-      const rc = rank <= 3 ? `r-${rank}` : 'r-default';
-      const pw = (person.prompts / maxPrompts) * 100;
-
-      let trendHtml = '<span class="trend-flat">—</span>';
-      if (lastWeek && lastMap[person.name] !== undefined) {
-        const diff = person.prompts - lastMap[person.name];
-        if (diff > 0) trendHtml = `<span class="trend-up"><span class="trend-arrow">▲</span> +${diff}</span>`;
-        else if (diff < 0) trendHtml = `<span class="trend-down"><span class="trend-arrow">▼</span> ${diff}</span>`;
-      }
-
-      let badgesHtml = '';
-      if (person.prompts > (pbMap[person.name] || 0) && dates.length > 1) {
-        badgesHtml += '<span class="mini-badge record">PR</span>';
-      }
-
+    current.forEach((p, i) => {
       const row = document.createElement('div');
-      row.className = `board-row ${rc}`;
-      row.style.animationDelay = `${0.05 + (i * 0.04)}s`;
-
+      row.className = 'board-row';
       row.innerHTML = `
-        <div><span class="r-badge">${rank}</span></div>
-        <div class="name-cell"><span class="name-text">${person.name}</span><span class="name-badges">${badgesHtml}</span></div>
-        <div class="prompts-cell">${person.prompts.toLocaleString()}</div>
-        <div class="trend-cell">${trendHtml}</div>
-        <div class="row-progress"><div class="row-progress-fill" style="width:${pw}%"></div></div>
+        <div class="r-badge">${i + 1}</div>
+        <div class="name-text">${p.name}</div>
+        <div class="prompts-cell">${p.prompts.toLocaleString()}</div>
+        <div class="trend-cell">—</div>
       `;
       boardBody.appendChild(row);
     });
-
-    // Stats
-    document.getElementById('statsSection').style.display = '';
-    const activeCount = current.filter(p => p.prompts > 0).length;
-
-    document.getElementById('sTotalPrompts').textContent = totalPrompts.toLocaleString();
-    document.getElementById('sAvg').textContent = current.length ? Math.round(totalPrompts / current.length).toLocaleString() : '0';
-    document.getElementById('sTeamSize').textContent = String(current.length);
-    document.getElementById('sParticipation').textContent = current.length ? Math.round((activeCount / current.length) * 100) + '%' : '0%';
   }
 
   async function loadData() {
-    const boardBody = document.getElementById('boardBody');
-    try {
-      const res = await fetch(SHEETS_URL, { cache: 'no-store' });
-      if (!res.ok) throw new Error(`Fetch failed (${res.status})`);
-      const text = await res.text();
-      processData(text);
-    } catch (err) {
-      console.error(err);
-      boardBody.innerHTML = `
-        <div class="state-msg error-msg">
-          <div style="font-size:28px;margin-bottom:12px;">⚠</div>
-          <div>Could not load leaderboard data</div>
-          <div class="setup-hint">
-            <strong style="color:var(--text-primary);">What I need:</strong><br>
-            Please open <code>/api/leaderboard</code> and copy the first 1–2 lines here.<br><br>
-            <strong style="color:var(--text-primary);">Error:</strong> ${String(err.message || err)}
-          </div>
-        </div>
-      `;
-    }
+    const res = await fetch(SHEETS_URL, { cache: 'no-store' });
+    const text = await res.text();
+    processData(text);
   }
 
   loadData();
-  setInterval(loadData, 60000);
 </script>
-
-
 </body>
 </html>
