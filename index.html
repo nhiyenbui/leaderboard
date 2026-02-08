@@ -422,12 +422,20 @@
       const rc = rank <= 3 ? `r-${rank}` : 'r-default';
       const pw = (person.prompts / maxPrompts) * 100;
 
-      let trendHtml = '<span class="trend-flat">—</span>';
-      if (lastWeek && lastMap[person.name] !== undefined) {
-        const diff = person.prompts - lastMap[person.name];
-        if (diff > 0) trendHtml = `<span class="trend-up"><span class="trend-arrow">▲</span> +${diff}</span>`;
-        else if (diff < 0) trendHtml = `<span class="trend-down"><span class="trend-arrow">▼</span> ${diff}</span>`;
-      }
+// treat missing last-week values as 0 so we always show a numeric trend
+const lastVal = (lastWeek && lastMap[person.name] !== undefined) ? lastMap[person.name] : 0;
+const diff = person.prompts - lastVal;
+
+let trendHtml;
+if (diff > 0) {
+  trendHtml = `<span class="trend-up"><span class="trend-arrow">▲</span> +${diff}</span>`;
+} else if (diff < 0) {
+  trendHtml = `<span class="trend-down"><span class="trend-arrow">▼</span> ${diff}</span>`;
+} else {
+  // zero change
+  trendHtml = `<span class="trend-flat">0</span>`; // change to '—' if you prefer
+}
+
 
       let badgesHtml = '';
       if (person.prompts > (pbMap[person.name] || 0) && dates.length > 1) {
