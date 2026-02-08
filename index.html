@@ -247,15 +247,16 @@
 
   <script>
     // ============================================================
-    // CONFIG — PUT YOUR GOOGLE SHEET INFO HERE
+    // CONFIG
     // ============================================================
-    const SHEET_ID = '1VcriRYQqEd9Il_YZI9-WvsbKUx1D05_eteGCxsRTg90';
-    const SHEET_NAME = 'Sheet1';      // tab name at bottom of Google Sheet
     const TEAM_GOAL = 1500;
-    // ============================================================
 
-    const SHEETS_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`;
-    document.getElementById('sheetLink').href = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit`;
+    // Pull data from Vercel serverless function (keeps Sheet ID hidden)
+    const SHEETS_URL = '/api/leaderboard';
+
+    // Hide "Open Sheet" link so the Sheet URL/ID isn't exposed
+    document.getElementById('sheetLink').style.display = 'none';
+
     document.getElementById('goalTarget').textContent = TEAM_GOAL.toLocaleString();
 
     function processData(csvText) {
@@ -406,8 +407,8 @@
             <div>Could not load leaderboard data</div>
             <div class="setup-hint">
               <strong style="color:var(--text-primary);">Setup checklist:</strong><br>
-              1. Sheet shared as <code>Anyone with link → Viewer</code><br>
-              2. Correct <code>SHEET_ID</code> and <code>SHEET_NAME</code><br>
+              1. Vercel env vars <code>SHEET_ID</code> and <code>SHEET_NAME</code> set<br>
+              2. Sheet shared as <code>Anyone with link → Viewer</code><br>
               3. Columns: <code>Date</code>, <code>Name</code>, <code>Prompts</code><br>
               4. Date format: <code>YYYY-MM-DD</code>
             </div>
