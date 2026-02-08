@@ -266,10 +266,12 @@
         .replace(/\r/g, "\n")
         .replace(/"\s+"/g, "\"\n\"");
 
-      const parsed = Papa.parse(normalized, {
-        header: true,
-        skipEmptyLines: true
-      });
+const parsed = Papa.parse(normalized, {
+  header: true,
+  skipEmptyLines: true,
+  delimiter: "\t"   // 👈 THIS IS THE FIX
+});
+
 
       const rows = parsed.data || [];
 
