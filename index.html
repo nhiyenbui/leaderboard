@@ -250,63 +250,86 @@
   // CONFIG
   // ============================================================
   const TEAM_GOAL = 1500;
-
-  // Pull data from Vercel serverless function (keeps Sheet ID hidden)
   const SHEETS_URL = '/api/leaderboard';
 
   // Hide "Open Sheet" link so the Sheet URL/ID isn't exposed
   document.getElementById('sheetLink').style.display = 'none';
-
   document.getElementById('goalTarget').textContent = TEAM_GOAL.toLocaleString();
 
-  function processData(csvText) {
-    // Normalize odd formatting (sometimes quotes are separated by spaces)
-    const normalized = String(csvText || '')
+  // Parse dates like 2/3/2026 OR 2026-02-03 reliably
+  function parseDateFlexible(s) {
+    const text = String(s || '').trim();
+    if (!text) return null;
+
+    // ISO format: 2026-02-03
+    if (/^\d{4}-\d{2}-\d{2}$/.test(text)) {
+      const d = new Date(text + "T00:00:00");
+      return isNaN(d) ? null : d;
+    }
+
+    // Slash format: 2/3/2026 or 02/03/2026
+    const m = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (m) {
+      let a = parseInt(m[1], 10);
+      let b = parseInt(m[2], 10);
+      const y = parseInt(m[3], 10);
+
+      // Heuristic:
+      // - if first number > 12 => treat as DD/MM/YYYY
+      // - else treat as MM/DD/YYYY
+      let month, day;
+      if (a > 12) { day = a; month = b; }
+      else { month = a; day = b; }
+
+      const d = new Date(y, month - 1, day);
+      return isNaN(d) ? null : d;
+    }
+
+    // Last resort (not ideal, but better than failing)
+    const d = new Date(text);
+    return isNaN(d) ? null : d;
+  }
+
+  function processData(rawText) {
+    // Normalize weird formatting (quotes separated by spaces, odd line breaks)
+    const normalized = String(rawText || '')
       .replace(/\r\n/g, "\n")
       .replace(/\r/g, "\n")
       .replace(/"\s+"/g, "\"\n\"");
 
-    // Your API is returning tab-separated rows (TSV), so parse as TSV
+    // Auto-detect delimiter: tabs or commas
+    const delimiter = normalized.includes("\t") ? "\t" : ",";
+
     const parsed = Papa.parse(normalized, {
       header: true,
       skipEmptyLines: true,
-      delimiter: "\t"
+      delimiter
     });
 
     const rows = parsed.data || [];
 
-    // Keep the date as text (ex: 2/3/2026), but also make a real date for sorting
     const all = rows
       .map(r => {
         const dateText = String(r['Date'] || '').trim();
-        const dateValue = new Date(dateText);
+        const dateValue = parseDateFlexible(dateText);
 
         return {
-          dateText,
-          dateValue,
+          dateText,       // keep as-is (2/3/2026)
+          dateValue,      // real date used internally
           name: String(r['Name'] || '').trim(),
           prompts: Number.parseInt(r['Prompts'], 10) || 0
         };
       })
-      .filter(r => r.name && !isNaN(r.dateValue));
+      .filter(r => r.name && r.dateValue);
 
-    // If no valid rows, show message and stop
     if (!all.length) {
-      document.getElementById('weekLabel').textContent = '—';
-      const boardBody = document.getElementById('boardBody');
-      boardBody.innerHTML = `
-        <div class="state-msg error-msg">
-          <div style="font-size:28px;margin-bottom:12px;">⚠</div>
-          <div>No valid data found</div>
-          <div class="setup-hint">
-            Check your sheet has columns: <code>Date</code>, <code>Name</code>, <code>Prompts</code>
-          </div>
-        </div>
-      `;
-      return;
+      throw new Error(
+        `No valid rows found. I received ${rows.length} rows. ` +
+        `Check headers are exactly: Date, Name, Prompts.`
+      );
     }
 
-    // Unique dates sorted newest -> oldest
+    // Unique dates newest -> oldest
     const dates = [...new Set(all.map(r => r.dateValue.getTime()))]
       .sort((a, b) => b - a)
       .map(t => new Date(t));
@@ -318,7 +341,6 @@
       .filter(r => r.dateValue.getTime() === currentWeek.getTime())
       .sort((a, b) => b.prompts - a.prompts);
 
-    // Map last week prompts by name
     const lastMap = {};
     if (lastWeek) {
       all
@@ -326,7 +348,6 @@
         .forEach(r => { lastMap[r.name] = r.prompts; });
     }
 
-    // Personal best (excluding current week)
     const pbMap = {};
     all.forEach(r => {
       if (r.dateValue.getTime() !== currentWeek.getTime()) {
@@ -334,7 +355,6 @@
       }
     });
 
-    // History (all weeks) per person
     const historyMap = {};
     all.forEach(r => {
       if (!historyMap[r.name]) historyMap[r.name] = [];
@@ -343,11 +363,12 @@
 
     const maxPrompts = current.length ? current[0].prompts : 1;
 
-    // Show the date in the same format you have in the sheet (like 2/3/2026)
+    // Display "Week of" using the same text format from the sheet
     const currentWeekText =
-      current.find(r => r.dateValue.getTime() === currentWeek.getTime())?.dateText || '';
+      current[0]?.dateText || current.find(r => r.dateValue.getTime() === currentWeek.getTime())?.dateText || '';
 
-    document.getElementById('weekLabel').textContent = currentWeekText ? `Week of ${currentWeekText}` : '—';
+    document.getElementById('weekLabel').textContent =
+      currentWeekText ? `Week of ${currentWeekText}` : '—';
 
     // MVP
     if (current.length) {
@@ -415,41 +436,6 @@
       boardBody.appendChild(row);
     });
 
-    // Rising star
-    if (lastWeek) {
-      let biggestGain = 0, risingPerson = null;
-      current.forEach(p => {
-        const gain = p.prompts - (lastMap[p.name] || 0);
-        if (gain > biggestGain) { biggestGain = gain; risingPerson = p; }
-      });
-      if (risingPerson) {
-        document.getElementById('insightsSection').style.display = '';
-        document.getElementById('risingName').textContent = risingPerson.name;
-        document.getElementById('risingStat').innerHTML = `<span class="highlight">+${biggestGain}</span> prompts vs last week`;
-      }
-    }
-
-    // Most consistent
-    if (dates.length > 1) {
-      let bestVar = Infinity, conPerson = null;
-      current.forEach(p => {
-        const h = historyMap[p.name];
-        if (h && h.length > 1) {
-          const avg = h.reduce((s, v) => s + v, 0) / h.length;
-          const variance = h.reduce((s, v) => s + Math.pow(v - avg, 2), 0) / h.length;
-          if (variance < bestVar && avg > 0) {
-            bestVar = variance;
-            conPerson = { name: p.name, avg: Math.round(avg), weeks: h.length };
-          }
-        }
-      });
-      if (conPerson) {
-        document.getElementById('insightsSection').style.display = '';
-        document.getElementById('consistentName').textContent = conPerson.name;
-        document.getElementById('consistentStat').textContent = `~${conPerson.avg} avg over ${conPerson.weeks} weeks`;
-      }
-    }
-
     // Stats
     document.getElementById('statsSection').style.display = '';
     const activeCount = current.filter(p => p.prompts > 0).length;
@@ -465,7 +451,8 @@
     try {
       const res = await fetch(SHEETS_URL, { cache: 'no-store' });
       if (!res.ok) throw new Error(`Fetch failed (${res.status})`);
-      processData(await res.text());
+      const text = await res.text();
+      processData(text);
     } catch (err) {
       console.error(err);
       boardBody.innerHTML = `
@@ -473,7 +460,9 @@
           <div style="font-size:28px;margin-bottom:12px;">⚠</div>
           <div>Could not load leaderboard data</div>
           <div class="setup-hint">
-            Check: <code>/api/leaderboard</code> is returning data and headers are <code>Date</code>, <code>Name</code>, <code>Prompts</code>
+            <strong style="color:var(--text-primary);">What I need:</strong><br>
+            Please open <code>/api/leaderboard</code> and copy the first 1–2 lines here.<br><br>
+            <strong style="color:var(--text-primary);">Error:</strong> ${String(err.message || err)}
           </div>
         </div>
       `;
@@ -483,6 +472,7 @@
   loadData();
   setInterval(loadData, 60000);
 </script>
+
 
 </body>
 </html>
