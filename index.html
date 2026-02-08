@@ -245,207 +245,244 @@
     <div class="footer">Data refreshes every 60s · <a href="#" id="sheetLink" target="_blank" rel="noreferrer">Open Sheet</a></div>
   </div>
 
-  <script>
-    // ============================================================
-    // CONFIG
-    // ============================================================
-    const TEAM_GOAL = 1500;
+<script>
+  // ============================================================
+  // CONFIG
+  // ============================================================
+  const TEAM_GOAL = 1500;
 
-    // Pull data from Vercel serverless function (keeps Sheet ID hidden)
-    const SHEETS_URL = '/api/leaderboard';
+  // Pull data from Vercel serverless function (keeps Sheet ID hidden)
+  const SHEETS_URL = '/api/leaderboard';
 
-    // Hide "Open Sheet" link so the Sheet URL/ID isn't exposed
-    document.getElementById('sheetLink').style.display = 'none';
+  // Hide "Open Sheet" link so the Sheet URL/ID isn't exposed
+  document.getElementById('sheetLink').style.display = 'none';
 
-    document.getElementById('goalTarget').textContent = TEAM_GOAL.toLocaleString();
+  document.getElementById('goalTarget').textContent = TEAM_GOAL.toLocaleString();
 
-    function processData(csvText) {
-      // Fix cases where rows come back without real line breaks (quotes separated by spaces)
-      const normalized = String(csvText || '')
-        .replace(/\r\n/g, "\n")
-        .replace(/\r/g, "\n")
-        .replace(/"\s+"/g, "\"\n\"");
+  function processData(csvText) {
+    // Normalize odd formatting (sometimes quotes are separated by spaces)
+    const normalized = String(csvText || '')
+      .replace(/\r\n/g, "\n")
+      .replace(/\r/g, "\n")
+      .replace(/"\s+"/g, "\"\n\"");
 
-const parsed = Papa.parse(normalized, {
-  header: true,
-  skipEmptyLines: true,
-  delimiter: "\t"   // 👈 THIS IS THE FIX
-});
+    // Your API is returning tab-separated rows (TSV), so parse as TSV
+    const parsed = Papa.parse(normalized, {
+      header: true,
+      skipEmptyLines: true,
+      delimiter: "\t"
+    });
 
+    const rows = parsed.data || [];
 
-      const rows = parsed.data || [];
+    // Keep the date as text (ex: 2/3/2026), but also make a real date for sorting
+    const all = rows
+      .map(r => {
+        const dateText = String(r['Date'] || '').trim();
+        const dateValue = new Date(dateText);
 
-      const all = rows
-.map(r => {
-  const rawDate = String(r['Date'] || '').trim();
-  const parsedDate = new Date(rawDate);
+        return {
+          dateText,
+          dateValue,
+          name: String(r['Name'] || '').trim(),
+          prompts: Number.parseInt(r['Prompts'], 10) || 0
+        };
+      })
+      .filter(r => r.name && !isNaN(r.dateValue));
 
-  return {
-    date: isNaN(parsedDate) ? rawDate : parsedDate.toISOString().slice(0, 10),
-    name: String(r['Name'] || '').trim(),
-    prompts: Number.parseInt(r['Prompts'], 10) || 0
-  };
-})
-
-        .filter(r => r.name && r.date);
-
-      const dates = [...new Set(all.map(r => r.date))].sort().reverse();
-      const currentWeek = dates[0];
-      const lastWeek = dates[1] || null;
-
-      const current = all
-        .filter(r => r.date === currentWeek)
-        .sort((a, b) => b.prompts - a.prompts);
-
-      const lastMap = {};
-      if (lastWeek) all.filter(r => r.date === lastWeek).forEach(r => { lastMap[r.name] = r.prompts; });
-
-      const pbMap = {};
-      all.forEach(r => { if (r.date !== currentWeek) pbMap[r.name] = Math.max(pbMap[r.name] || 0, r.prompts); });
-
-      const historyMap = {};
-      all.forEach(r => { if (!historyMap[r.name]) historyMap[r.name] = []; historyMap[r.name].push(r.prompts); });
-
-      const maxPrompts = current.length ? current[0].prompts : 1;
-      document.getElementById('weekLabel').textContent = currentWeek ? `Week of ${currentWeek}` : '—';
-
-      // MVP
-      if (current.length) {
-        const mvp = current[0];
-        document.getElementById('mvpSection').style.display = '';
-        document.getElementById('mvpName').textContent = mvp.name;
-        document.getElementById('mvpPrompts').textContent = mvp.prompts.toLocaleString();
-
-        const badges = document.getElementById('mvpBadges');
-        badges.innerHTML = '';
-
-        if (mvp.prompts > (pbMap[mvp.name] || 0) && dates.length > 1) {
-          badges.innerHTML += '<span class="mvp-badge badge-record">New Record</span>';
-        }
-
-        const weeksActive = [...new Set(all.filter(r => r.name === mvp.name).map(r => r.date))].length;
-        if (weeksActive > 1) {
-          badges.innerHTML += `<span class="mvp-badge badge-streak">${weeksActive} Week Streak</span>`;
-        }
-      }
-
-      // Goal
-      const totalPrompts = current.reduce((s, r) => s + r.prompts, 0);
-      document.getElementById('goalSection').style.display = '';
-      document.getElementById('goalCurrent').textContent = totalPrompts.toLocaleString();
-
-      const pct = Math.min((totalPrompts / TEAM_GOAL) * 100, 100);
-      setTimeout(() => { document.getElementById('goalFill').style.width = pct + '%'; }, 300);
-
-      const goalCard = document.getElementById('goalCard');
-      goalCard.classList.toggle('goal-exceeded', totalPrompts >= TEAM_GOAL);
-
-      // Leaderboard
+    // If no valid rows, show message and stop
+    if (!all.length) {
+      document.getElementById('weekLabel').textContent = '—';
       const boardBody = document.getElementById('boardBody');
-      boardBody.innerHTML = '';
-
-      current.forEach((person, i) => {
-        const rank = i + 1;
-        const rc = rank <= 3 ? `r-${rank}` : 'r-default';
-        const pw = (person.prompts / maxPrompts) * 100;
-
-        let trendHtml = '<span class="trend-flat">—</span>';
-        if (lastWeek && lastMap[person.name] !== undefined) {
-          const diff = person.prompts - lastMap[person.name];
-          if (diff > 0) trendHtml = `<span class="trend-up"><span class="trend-arrow">▲</span> +${diff}</span>`;
-          else if (diff < 0) trendHtml = `<span class="trend-down"><span class="trend-arrow">▼</span> ${diff}</span>`;
-        }
-
-        let badgesHtml = '';
-        if (person.prompts > (pbMap[person.name] || 0) && dates.length > 1) {
-          badgesHtml += '<span class="mini-badge record">PR</span>';
-        }
-
-        const row = document.createElement('div');
-        row.className = `board-row ${rc}`;
-        row.style.animationDelay = `${0.05 + (i * 0.04)}s`;
-
-        row.innerHTML = `
-          <div><span class="r-badge">${rank}</span></div>
-          <div class="name-cell"><span class="name-text">${person.name}</span><span class="name-badges">${badgesHtml}</span></div>
-          <div class="prompts-cell">${person.prompts.toLocaleString()}</div>
-          <div class="trend-cell">${trendHtml}</div>
-          <div class="row-progress"><div class="row-progress-fill" style="width:${pw}%"></div></div>
-        `;
-        boardBody.appendChild(row);
-      });
-
-      // Rising star
-      if (lastWeek) {
-        let biggestGain = 0, risingPerson = null;
-        current.forEach(p => {
-          const gain = p.prompts - (lastMap[p.name] || 0);
-          if (gain > biggestGain) { biggestGain = gain; risingPerson = p; }
-        });
-        if (risingPerson) {
-          document.getElementById('insightsSection').style.display = '';
-          document.getElementById('risingName').textContent = risingPerson.name;
-          document.getElementById('risingStat').innerHTML = `<span class="highlight">+${biggestGain}</span> prompts vs last week`;
-        }
-      }
-
-      // Most consistent
-      if (dates.length > 1) {
-        let bestVar = Infinity, conPerson = null;
-        current.forEach(p => {
-          const h = historyMap[p.name];
-          if (h && h.length > 1) {
-            const avg = h.reduce((s, v) => s + v, 0) / h.length;
-            const variance = h.reduce((s, v) => s + Math.pow(v - avg, 2), 0) / h.length;
-            if (variance < bestVar && avg > 0) {
-              bestVar = variance;
-              conPerson = { name: p.name, avg: Math.round(avg), weeks: h.length };
-            }
-          }
-        });
-        if (conPerson) {
-          document.getElementById('insightsSection').style.display = '';
-          document.getElementById('consistentName').textContent = conPerson.name;
-          document.getElementById('consistentStat').textContent = `~${conPerson.avg} avg over ${conPerson.weeks} weeks`;
-        }
-      }
-
-      // Stats
-      document.getElementById('statsSection').style.display = '';
-      const activeCount = current.filter(p => p.prompts > 0).length;
-
-      document.getElementById('sTotalPrompts').textContent = totalPrompts.toLocaleString();
-      document.getElementById('sAvg').textContent = current.length ? Math.round(totalPrompts / current.length).toLocaleString() : '0';
-      document.getElementById('sTeamSize').textContent = String(current.length);
-      document.getElementById('sParticipation').textContent = current.length ? Math.round((activeCount / current.length) * 100) + '%' : '0%';
-    }
-
-    async function loadData() {
-      const boardBody = document.getElementById('boardBody');
-      try {
-        const res = await fetch(SHEETS_URL, { cache: 'no-store' });
-        if (!res.ok) throw new Error(`Fetch failed (${res.status})`);
-        processData(await res.text());
-      } catch (err) {
-        console.error(err);
-        boardBody.innerHTML = `
-          <div class="state-msg error-msg">
-            <div style="font-size:28px;margin-bottom:12px;">⚠</div>
-            <div>Could not load leaderboard data</div>
-            <div class="setup-hint">
-              <strong style="color:var(--text-primary);">Setup checklist:</strong><br>
-              1. Vercel env vars <code>SHEET_ID</code> and <code>SHEET_NAME</code> set<br>
-              2. Sheet shared as <code>Anyone with link → Viewer</code><br>
-              3. Columns: <code>Date</code>, <code>Name</code>, <code>Prompts</code><br>
-              4. Date format: <code>YYYY-MM-DD</code>
-            </div>
+      boardBody.innerHTML = `
+        <div class="state-msg error-msg">
+          <div style="font-size:28px;margin-bottom:12px;">⚠</div>
+          <div>No valid data found</div>
+          <div class="setup-hint">
+            Check your sheet has columns: <code>Date</code>, <code>Name</code>, <code>Prompts</code>
           </div>
-        `;
+        </div>
+      `;
+      return;
+    }
+
+    // Unique dates sorted newest -> oldest
+    const dates = [...new Set(all.map(r => r.dateValue.getTime()))]
+      .sort((a, b) => b - a)
+      .map(t => new Date(t));
+
+    const currentWeek = dates[0];
+    const lastWeek = dates[1] || null;
+
+    const current = all
+      .filter(r => r.dateValue.getTime() === currentWeek.getTime())
+      .sort((a, b) => b.prompts - a.prompts);
+
+    // Map last week prompts by name
+    const lastMap = {};
+    if (lastWeek) {
+      all
+        .filter(r => r.dateValue.getTime() === lastWeek.getTime())
+        .forEach(r => { lastMap[r.name] = r.prompts; });
+    }
+
+    // Personal best (excluding current week)
+    const pbMap = {};
+    all.forEach(r => {
+      if (r.dateValue.getTime() !== currentWeek.getTime()) {
+        pbMap[r.name] = Math.max(pbMap[r.name] || 0, r.prompts);
+      }
+    });
+
+    // History (all weeks) per person
+    const historyMap = {};
+    all.forEach(r => {
+      if (!historyMap[r.name]) historyMap[r.name] = [];
+      historyMap[r.name].push(r.prompts);
+    });
+
+    const maxPrompts = current.length ? current[0].prompts : 1;
+
+    // Show the date in the same format you have in the sheet (like 2/3/2026)
+    const currentWeekText =
+      current.find(r => r.dateValue.getTime() === currentWeek.getTime())?.dateText || '';
+
+    document.getElementById('weekLabel').textContent = currentWeekText ? `Week of ${currentWeekText}` : '—';
+
+    // MVP
+    if (current.length) {
+      const mvp = current[0];
+      document.getElementById('mvpSection').style.display = '';
+      document.getElementById('mvpName').textContent = mvp.name;
+      document.getElementById('mvpPrompts').textContent = mvp.prompts.toLocaleString();
+
+      const badges = document.getElementById('mvpBadges');
+      badges.innerHTML = '';
+
+      if (mvp.prompts > (pbMap[mvp.name] || 0) && dates.length > 1) {
+        badges.innerHTML += '<span class="mvp-badge badge-record">New Record</span>';
+      }
+
+      const weeksActive = [...new Set(all.filter(r => r.name === mvp.name).map(r => r.dateValue.getTime()))].length;
+      if (weeksActive > 1) {
+        badges.innerHTML += `<span class="mvp-badge badge-streak">${weeksActive} Week Streak</span>`;
       }
     }
 
-    loadData();
-    setInterval(loadData, 60000);
-  </script>
+    // Goal
+    const totalPrompts = current.reduce((s, r) => s + r.prompts, 0);
+    document.getElementById('goalSection').style.display = '';
+    document.getElementById('goalCurrent').textContent = totalPrompts.toLocaleString();
+
+    const pct = Math.min((totalPrompts / TEAM_GOAL) * 100, 100);
+    setTimeout(() => { document.getElementById('goalFill').style.width = pct + '%'; }, 300);
+
+    const goalCard = document.getElementById('goalCard');
+    goalCard.classList.toggle('goal-exceeded', totalPrompts >= TEAM_GOAL);
+
+    // Leaderboard
+    const boardBody = document.getElementById('boardBody');
+    boardBody.innerHTML = '';
+
+    current.forEach((person, i) => {
+      const rank = i + 1;
+      const rc = rank <= 3 ? `r-${rank}` : 'r-default';
+      const pw = (person.prompts / maxPrompts) * 100;
+
+      let trendHtml = '<span class="trend-flat">—</span>';
+      if (lastWeek && lastMap[person.name] !== undefined) {
+        const diff = person.prompts - lastMap[person.name];
+        if (diff > 0) trendHtml = `<span class="trend-up"><span class="trend-arrow">▲</span> +${diff}</span>`;
+        else if (diff < 0) trendHtml = `<span class="trend-down"><span class="trend-arrow">▼</span> ${diff}</span>`;
+      }
+
+      let badgesHtml = '';
+      if (person.prompts > (pbMap[person.name] || 0) && dates.length > 1) {
+        badgesHtml += '<span class="mini-badge record">PR</span>';
+      }
+
+      const row = document.createElement('div');
+      row.className = `board-row ${rc}`;
+      row.style.animationDelay = `${0.05 + (i * 0.04)}s`;
+
+      row.innerHTML = `
+        <div><span class="r-badge">${rank}</span></div>
+        <div class="name-cell"><span class="name-text">${person.name}</span><span class="name-badges">${badgesHtml}</span></div>
+        <div class="prompts-cell">${person.prompts.toLocaleString()}</div>
+        <div class="trend-cell">${trendHtml}</div>
+        <div class="row-progress"><div class="row-progress-fill" style="width:${pw}%"></div></div>
+      `;
+      boardBody.appendChild(row);
+    });
+
+    // Rising star
+    if (lastWeek) {
+      let biggestGain = 0, risingPerson = null;
+      current.forEach(p => {
+        const gain = p.prompts - (lastMap[p.name] || 0);
+        if (gain > biggestGain) { biggestGain = gain; risingPerson = p; }
+      });
+      if (risingPerson) {
+        document.getElementById('insightsSection').style.display = '';
+        document.getElementById('risingName').textContent = risingPerson.name;
+        document.getElementById('risingStat').innerHTML = `<span class="highlight">+${biggestGain}</span> prompts vs last week`;
+      }
+    }
+
+    // Most consistent
+    if (dates.length > 1) {
+      let bestVar = Infinity, conPerson = null;
+      current.forEach(p => {
+        const h = historyMap[p.name];
+        if (h && h.length > 1) {
+          const avg = h.reduce((s, v) => s + v, 0) / h.length;
+          const variance = h.reduce((s, v) => s + Math.pow(v - avg, 2), 0) / h.length;
+          if (variance < bestVar && avg > 0) {
+            bestVar = variance;
+            conPerson = { name: p.name, avg: Math.round(avg), weeks: h.length };
+          }
+        }
+      });
+      if (conPerson) {
+        document.getElementById('insightsSection').style.display = '';
+        document.getElementById('consistentName').textContent = conPerson.name;
+        document.getElementById('consistentStat').textContent = `~${conPerson.avg} avg over ${conPerson.weeks} weeks`;
+      }
+    }
+
+    // Stats
+    document.getElementById('statsSection').style.display = '';
+    const activeCount = current.filter(p => p.prompts > 0).length;
+
+    document.getElementById('sTotalPrompts').textContent = totalPrompts.toLocaleString();
+    document.getElementById('sAvg').textContent = current.length ? Math.round(totalPrompts / current.length).toLocaleString() : '0';
+    document.getElementById('sTeamSize').textContent = String(current.length);
+    document.getElementById('sParticipation').textContent = current.length ? Math.round((activeCount / current.length) * 100) + '%' : '0%';
+  }
+
+  async function loadData() {
+    const boardBody = document.getElementById('boardBody');
+    try {
+      const res = await fetch(SHEETS_URL, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`Fetch failed (${res.status})`);
+      processData(await res.text());
+    } catch (err) {
+      console.error(err);
+      boardBody.innerHTML = `
+        <div class="state-msg error-msg">
+          <div style="font-size:28px;margin-bottom:12px;">⚠</div>
+          <div>Could not load leaderboard data</div>
+          <div class="setup-hint">
+            Check: <code>/api/leaderboard</code> is returning data and headers are <code>Date</code>, <code>Name</code>, <code>Prompts</code>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  loadData();
+  setInterval(loadData, 60000);
+</script>
+
 </body>
 </html>
