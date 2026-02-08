@@ -274,11 +274,17 @@
       const rows = parsed.data || [];
 
       const all = rows
-        .map(r => ({
-          date: String(r['Date'] || '').trim(),
-          name: String(r['Name'] || '').trim(),
-          prompts: Number.parseInt(r['Prompts'], 10) || 0
-        }))
+.map(r => {
+  const rawDate = String(r['Date'] || '').trim();
+  const parsedDate = new Date(rawDate);
+
+  return {
+    date: isNaN(parsedDate) ? rawDate : parsedDate.toISOString().slice(0, 10),
+    name: String(r['Name'] || '').trim(),
+    prompts: Number.parseInt(r['Prompts'], 10) || 0
+  };
+})
+
         .filter(r => r.name && r.date);
 
       const dates = [...new Set(all.map(r => r.date))].sort().reverse();
